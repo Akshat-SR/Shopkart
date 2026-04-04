@@ -9,7 +9,7 @@ bin/
 *.war
 *.ear
 *.log
-application.properties
+backend/src/main/resources/application.properties
 
 # --- React / Node ---
 node_modules/
