@@ -272,7 +272,7 @@ http://localhost:8080/swagger-ui/index.html
 
 ## 👨‍💻 Author
 
-Your Name
+Akshat Srivastava
 GitHub: https://github.com/Akshat-SR
 
 ---
