@@ -1,5 +1,4 @@
-# 🛒 Shopkart: E-Commerce Backend
-
+# 🛒 Shopkart: Backend E-Commerce System
 A full-featured e-commerce backend built using **Spring Boot**, implementing **JWT-based authentication**, **role-based authorization**, and core features like cart management, order processing, and admin controls.
 
 ---
@@ -273,7 +272,7 @@ http://localhost:8080/swagger-ui/index.html
 
 ## 👨‍💻 Author
 
-Your Name
+Akshat Srivastava
 GitHub: https://github.com/Akshat-SR
 
 ---
