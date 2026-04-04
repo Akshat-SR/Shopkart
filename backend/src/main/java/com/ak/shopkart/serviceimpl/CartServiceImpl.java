@@ -36,11 +36,11 @@ public class CartServiceImpl implements CartService {
   @Override
   public String addToCart(Long productId, int quantity) {
 
-    // Get logged-in user email from JWT
-    String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-    User user = userRepo.findByEmail(email)
-        .orElseThrow(() -> new RuntimeException("User not found"));
+    // Get logged-in user from JWT
+    User user = (User) SecurityContextHolder
+        .getContext()
+        .getAuthentication()
+        .getPrincipal();
 
     // Get or create cart
     Cart cart = cartRepo.findByUser(user).orElseGet(() -> {
@@ -77,13 +77,10 @@ public class CartServiceImpl implements CartService {
   @Override
   public CartDTO getUserCart() {
 
-    String email = (String) SecurityContextHolder
+    User user = (User) SecurityContextHolder
         .getContext()
         .getAuthentication()
         .getPrincipal();
-
-    User user = userRepo.findByEmail(email)
-        .orElseThrow(() -> new RuntimeException("User not found"));
 
     Cart cart = cartRepo.findByUser(user)
         .orElseThrow(() -> new RuntimeException("Cart is empty"));
@@ -94,13 +91,10 @@ public class CartServiceImpl implements CartService {
   @Override
   public String removeFromCart(Long productId) {
 
-    String email = (String) SecurityContextHolder
+    User user = (User) SecurityContextHolder
         .getContext()
         .getAuthentication()
         .getPrincipal();
-
-    User user = userRepo.findByEmail(email)
-        .orElseThrow(() -> new RuntimeException("User not found"));
 
     Cart cart = cartRepo.findByUser(user)
         .orElseThrow(() -> new RuntimeException("Cart not found"));

@@ -1,14 +1,16 @@
 package com.ak.shopkart.jwt;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.ak.shopkart.model.User;
+import com.ak.shopkart.repo.UserRepo;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,6 +22,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
   @Autowired
   private JwtUtil jwtUtil;
+
+  @Autowired
+  private UserRepo userRepo;
 
   @Override
   protected void doFilterInternal(HttpServletRequest request,
@@ -36,12 +41,20 @@ public class JwtFilter extends OncePerRequestFilter {
       try {
         String email = jwtUtil.extractEmail(token);
 
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-            email,
-            null,
-            List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        User user = userRepo.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+          UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+              user,
+              null,
+              user.getAuthorities());
+
+          authentication.setDetails(
+              new WebAuthenticationDetailsSource().buildDetails(request));
+
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
 
       } catch (Exception e) {
         System.out.println("Invalid token");

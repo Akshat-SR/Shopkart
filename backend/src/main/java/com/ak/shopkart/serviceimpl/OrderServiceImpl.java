@@ -1,14 +1,21 @@
 package com.ak.shopkart.serviceimpl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.ak.shopkart.dto.OrderDTO;
+import com.ak.shopkart.mapper.OrderMapper;
+import com.ak.shopkart.model.Address;
 import com.ak.shopkart.model.Cart;
 import com.ak.shopkart.model.CartItem;
 import com.ak.shopkart.model.Order;
 import com.ak.shopkart.model.OrderItem;
 import com.ak.shopkart.model.User;
+import com.ak.shopkart.repo.AddressRepo;
 import com.ak.shopkart.repo.CartRepo;
 import com.ak.shopkart.repo.OrderRepo;
 import com.ak.shopkart.repo.UserRepo;
@@ -26,51 +33,70 @@ public class OrderServiceImpl implements OrderService {
   @Autowired
   private UserRepo userRepo;
 
-  @Override
-  public String placeOrder() {
+  @Autowired
+  private AddressRepo addressRepo;
 
-    String email = (String) SecurityContextHolder
+  @Override
+  public String placeOrder(Long addressId) {
+
+    User user = (User) SecurityContextHolder
         .getContext()
         .getAuthentication()
         .getPrincipal();
 
-    User user = userRepo.findByEmail(email)
-        .orElseThrow(() -> new RuntimeException("User not found"));
-
     Cart cart = cartRepo.findByUser(user)
         .orElseThrow(() -> new RuntimeException("Cart not found"));
 
-    if (cart.getItems() == null || cart.getItems().isEmpty()) {
-      throw new RuntimeException("Cannot place order: Cart is empty");
+    if (cart.getItems().isEmpty()) {
+      throw new RuntimeException("Cart is empty");
     }
 
-    // Create order
+    Address address = addressRepo.findById(addressId)
+        .orElseThrow(() -> new RuntimeException("Address not found"));
+
     Order order = new Order();
     order.setUser(user);
+    order.setAddress(address);
 
     double total = 0;
 
-    for (CartItem item : cart.getItems()) {
+    List<OrderItem> orderItems = new ArrayList<>();
 
-      OrderItem orderItem = new OrderItem();
-      orderItem.setProduct(item.getProduct());
-      orderItem.setQuantity(item.getQuantity());
-      orderItem.setPrice(item.getProduct().getPrice());
-      orderItem.setOrder(order);
+    for (CartItem cartItem : cart.getItems()) {
 
-      order.getItems().add(orderItem);
+      OrderItem item = new OrderItem();
+      item.setProduct(cartItem.getProduct());
+      item.setQuantity(cartItem.getQuantity());
+      item.setPrice(cartItem.getProduct().getPrice());
+      item.setOrder(order);
 
-      total += item.getProduct().getPrice() * item.getQuantity();
+      total += cartItem.getQuantity() * cartItem.getProduct().getPrice();
+
+      orderItems.add(item);
     }
 
+    order.setItems(orderItems);
     order.setTotalPrice(total);
 
     orderRepo.save(order);
 
-    // Clear cart
+    // clear cart
     cart.getItems().clear();
     cartRepo.save(cart);
 
-    return "Order placed successfully!";
+    return "Order placed successfully";
+  }
+
+  @Override
+  public List<OrderDTO> getUserOrders() {
+
+    User user = (User) SecurityContextHolder
+        .getContext()
+        .getAuthentication()
+        .getPrincipal();
+
+    List<Order> orders = orderRepo.findByUser(user);
+
+    return OrderMapper.toDTOList(orders);
   }
 }

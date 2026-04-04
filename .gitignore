@@ -9,6 +9,7 @@ bin/
 *.war
 *.ear
 *.log
+application.properties
 
 # --- React / Node ---
 node_modules/

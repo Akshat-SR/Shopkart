@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.ak.shopkart.model.Order;
+import com.ak.shopkart.model.Address;
 import com.ak.shopkart.model.User;
 
-public interface OrderRepo extends JpaRepository<Order, Long> {
-  List<Order> findByUser(User user);
+public interface AddressRepo extends JpaRepository<Address, Long> {
+  List<Address> findByUser(User user);
 }
